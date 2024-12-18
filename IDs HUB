@@ -1,0 +1,176 @@
+local player = game.Players.LocalPlayer
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+local Window = OrionLib:MakeWindow({Name = "Ids Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+
+--[[
+Name = <string> - The name of the UI.
+HidePremium = <bool> - Whether or not the user details shows Premium status or not.
+SaveConfig = <bool> - Toggles the config saving in the UI.
+ConfigFolder = <string> - The name of the folder where the configs are saved.
+IntroEnabled = <bool> - Whether or not to show the intro animation.
+IntroText = <string> - Text to show in the intro animation.
+IntroIcon = <string> - URL to the image you want to use in the intro animation.
+Icon = <string> - URL to the image you want displayed on the window.
+CloseCallback = <function> - Function to execute when the window is closed.
+]]
+
+local Tab = Window:MakeTab({
+	Name = "aimbot",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+--[[
+Name = <string> - The name of the tab.
+Icon = <string> - The icon of the tab.
+PremiumOnly = <bool> - Makes the tab accessible to Sirus Premium users only.
+]]
+
+local Section = Tab:AddSection({
+	Name = "LocalPlayer"
+})
+
+--[[
+Name = <string> - The name of the section.
+]]
+
+OrionLib:MakeNotification({
+	Name = "Ids Hub",
+	Content = "Notification content... what will it say??",
+	Image = "rbxassetid://4483345998",
+	Time = 5
+})
+
+--[[
+Title = <string> - The title of the notification.
+Content = <string> - The content of the notification.
+Image = <string> - The icon of the notification.
+Time = <number> - The duration of the notfication.
+]]
+
+Tab:AddButton({
+	Name = "Aimlock",
+	Callback = function()
+      		local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = Workspace.CurrentCamera
+
+local aimLockEnabled = false
+local aimLockTarget = nil
+
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    local mapFolder = Workspace:FindFirstChild("MapFolder")
+    if mapFolder then
+        local playersFolder = mapFolder:FindFirstChild("Players")
+        if playersFolder then
+            for _, playerModel in ipairs(playersFolder:GetChildren()) do
+                if playerModel:IsA("Model") and playerModel:FindFirstChild("Head") then
+                    local head = playerModel.Head
+                    local screenPoint = Camera:WorldToScreenPoint(head.Position)
+                    local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - UserInputService:GetMouseLocation()).magnitude
+
+                    if distance < shortestDistance then
+                        closestPlayer = playerModel
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function aimAt(target)
+    if target and target:FindFirstChild("Head") then
+        local head = target.Head
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, head.Position)
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then -- Botão direito do mouse
+        aimLockEnabled = true
+        aimLockTarget = getClosestPlayer()
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then -- Botão direito do mouse
+        aimLockEnabled = false
+        aimLockTarget = nil
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if aimLockEnabled and aimLockTarget then
+        aimAt(aimLockTarget)
+    end
+end)
+
+  	end    
+})
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
+
+Tab:AddButton({
+	Name = "Esp",
+	Callback = function()
+      		local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local function createHighlight(part)
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = part
+    highlight.FillColor = Color3.new(0.5, 0, 0.5) -- Cor roxa
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.new(0.5, 0, 0.5) -- Cor roxa
+    highlight.OutlineTransparency = 0
+end
+
+local function highlightPlayersInMapFolder()
+    local mapFolder = Workspace:FindFirstChild("MapFolder")
+    if mapFolder then
+        local playersFolder = mapFolder:FindFirstChild("Players")
+        if playersFolder then
+            for _, playerModel in ipairs(playersFolder:GetChildren()) do
+                if playerModel:IsA("Model") and playerModel:FindFirstChild("Head") then
+                    createHighlight(playerModel.Head)
+                end
+            end
+        end
+    end
+end
+
+highlightPlayersInMapFolder()
+
+Workspace.ChildAdded:Connect(function(child)
+    if child.Name == "MapFolder" then
+        child.ChildAdded:Connect(function(grandChild)
+            if grandChild.Name == "Players" then
+                grandChild.ChildAdded:Connect(function(greatGrandChild)
+                    if greatGrandChild:IsA("Model") and greatGrandChild:FindFirstChild("Head") then
+                        createHighlight(greatGrandChild.Head)
+                    end
+                end)
+            end
+        end)
+    end
+end)
+
+  	end    
+})
+
+--[[
+Name = <string> - The name of the button.
+Callback = <function> - The function of the button.
+]]
